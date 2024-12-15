@@ -28,7 +28,7 @@ class planningadmin_mainwindow(QMainWindow):
 
         # Main window options
         self.resize(1200, 600)
-        self.setWindowTitle("PLANNING-ADMIN V1.0")
+        self.setWindowTitle("PLANNING-ADMIN V1.0.1")
 
         # ------------ Central widget building here -----------
         # Steps: Define Layout -> Add in elements -> Set layout
