@@ -251,7 +251,7 @@ def run_rupture_algorithm(mw, myws, dict_of_pd_excel_dfs):
                 r[3],               ## Qty
                 None,               ## Acc Qty keep blank for now, need to post-calculate
                 None,               ## status, keep blank for now
-                "30/9/2024",       ## First Date, use prev_month_last_date for actual. hardcoding for now
+                prev_month_last_date,       ## First Date, use prev_month_last_date for actual. hardcoding for now
                 None,              ## ECD Date leave blank for now
                 None,              ## Filling Date leave blank for now
                 None,              ## Delay leave blank for now
