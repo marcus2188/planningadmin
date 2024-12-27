@@ -55,7 +55,7 @@ class planningadmin_mainwindow(QMainWindow):
         Set the vbox layout on side bar itself
         """
         self.title_label = customlabel(
-            displaytext="PLANNING\nADMIN",
+            displaytext="Planning\nAdmin",
             dimensions=(20, 20, 20, 20),
             desired_font=("Courier New", 40),
             stylised=True,
@@ -64,16 +64,22 @@ class planningadmin_mainwindow(QMainWindow):
             buttontext="Rupture Report",
             dimensions=(20, 20, 70, 40),
             desired_font=("Trebuchet MS", 16),
+            buttontext_colour = single_source_of_truth.sidebar_buttontext_colour,
+            button_transparency = single_source_of_truth.sodebar_button_transparency,
         )
         self.vbsloader_button = custombutton(
             buttontext="Vbs Loader",
             dimensions=(20, 20, 70, 40),
             desired_font=("Trebuchet MS", 16),
+            buttontext_colour = single_source_of_truth.sidebar_buttontext_colour,
+            button_transparency = single_source_of_truth.sodebar_button_transparency,
         )
         self.settings_button = custombutton(
             buttontext="Settings",
             dimensions=(20, 20, 70, 40),
             desired_font=("Trebuchet MS", 16),
+            buttontext_colour = single_source_of_truth.sidebar_buttontext_colour,
+            button_transparency = single_source_of_truth.sodebar_button_transparency,
         )
         self.vbox_side_bar = QVBoxLayout()
         self.vbox_side_bar.addStretch()
@@ -112,14 +118,11 @@ class planningadmin_mainwindow(QMainWindow):
                 buttontext=x,
                 dimensions=(20, 20, 80, 30),
                 desired_font=("Trebuchet MS", 12),
+                buttontext_colour = single_source_of_truth.page_buttontext_colour,
+                button_transparency = single_source_of_truth.page_button_transparency,
             )
             for x in self.list_of_menus
         ]
-        self.gr_14days_add_checkbox = customcheckbox(
-            dimensions=(20, 20, 100, 40),
-            checkbox_text="(beta ignore)",
-            checked=True,
-        )
         self.list_of_files_to_browse = (
             single_source_of_truth.generate_rupture_files_required
         )
@@ -128,6 +131,8 @@ class planningadmin_mainwindow(QMainWindow):
                 buttontext=x,
                 dimensions=(20, 20, 80, 40),
                 desired_font=("Trebuchet MS", 12),
+                buttontext_colour = single_source_of_truth.page_buttontext_colour,
+                button_transparency = single_source_of_truth.page_button_transparency,
             )
             for x in [f"Browse for {y}" for y in self.list_of_files_to_browse]
         ]
@@ -139,6 +144,8 @@ class planningadmin_mainwindow(QMainWindow):
             buttontext="Generate",
             dimensions=(20, 20, 100, 40),
             desired_font=("Trebuchet MS", 30),
+            buttontext_colour = single_source_of_truth.page_buttontext_colour,
+            button_transparency = single_source_of_truth.page_button_transparency,
         )
 
         # Adding elements into the generate ecd page grid
@@ -147,11 +154,8 @@ class planningadmin_mainwindow(QMainWindow):
             self.gr_generate_rupture_frame_grid.addWidget(
                 self.gr_menu_buttons[ind], 0, ind + 2, 1, 1
             )
-        self.gr_generate_rupture_frame_grid.addWidget(
-            self.gr_14days_add_checkbox, 0, 4, 1, 1
-        )
         for ind in range(len(self.list_of_files_to_browse)):
-            if ind <= 4:
+            if ind <= 3:
                 self.gr_generate_rupture_frame_grid.addWidget(
                     self.gr_browse_buttons[ind], ind + 1, 0, 1, 1
                 )
@@ -160,14 +164,14 @@ class planningadmin_mainwindow(QMainWindow):
                 )
             else:
                 self.gr_generate_rupture_frame_grid.addWidget(
-                    self.gr_browse_buttons[ind], (ind % 5) + 1, 4, 1, 1
+                    self.gr_browse_buttons[ind], (ind % 4) + 1, 4, 1, 1
                 )
                 self.gr_generate_rupture_frame_grid.addWidget(
-                    self.gr_browse_text_fields[ind], (ind % 5) + 1, 5, 1, 3
+                    self.gr_browse_text_fields[ind], (ind % 4) + 1, 5, 1, 3
                 )
 
         self.gr_generate_rupture_frame_grid.addWidget(
-            self.gr_generate_rupture_button, 6, 0, 1, 8
+            self.gr_generate_rupture_button, 5, 0, 1, 8
         )
         self.generate_rupture_frame.setLayout(self.gr_generate_rupture_frame_grid)
 
@@ -194,7 +198,12 @@ class planningadmin_mainwindow(QMainWindow):
         )
         ###### acrb -> ss_accent_radio_button
         self.ss_accent_radio_buttons = [
-            customradiobutton(dimensions=(20, 20, 100, 40), radio_text=x, checked=False)
+            customradiobutton(
+                dimensions=(20, 20, 100, 40), 
+                radio_text=x, 
+                checkbox_colour=single_source_of_truth.mapped_rgb_tuples_to_colors[x]["sidebar"], 
+                checked=False
+            )
             for x in self.list_of_accent_colors
         ]
         ###### pwdt -> ss_perma_working_dir_text_field
@@ -206,12 +215,16 @@ class planningadmin_mainwindow(QMainWindow):
             buttontext="Change",
             dimensions=(20, 20, 100, 40),
             desired_font=("Trebuchet MS", 12),
+            buttontext_colour = single_source_of_truth.page_buttontext_colour,
+            button_transparency = single_source_of_truth.page_button_transparency,
         )
         ###### pwdc -> ss_clear_permadir_button
         self.ss_clear_permadir_button = custombutton(
             buttontext="Clear",
             dimensions=(20, 20, 100, 40),
             desired_font=("Trebuchet MS", 12),
+            buttontext_colour = single_source_of_truth.page_buttontext_colour,
+            button_transparency = single_source_of_truth.page_button_transparency,
         )
         ###### egfl -> ss_ecdgen_filename_label
         self.ss_ecdgen_filename_label = customlabel(
@@ -223,6 +236,22 @@ class planningadmin_mainwindow(QMainWindow):
         ###### egft -> ss_ecdgen_filename_text_field
         self.ss_ecdgen_filename_text_field = QLineEdit()
         self.ss_ecdgen_filename_text_field.setText("newgeneratedfile")
+        self.ss_ecdgen_filename_text_field.setStyleSheet("""
+            QLineEdit {
+                background-color: #FAFAFA;        /* Light background */
+                color: #212121;                   /* Dark text */
+                border: 1px solid #E0E0E0;        /* Light gray border */
+                border-radius: 8px;               /* Rounded corners */
+                padding: 4px;                     /* Comfortable padding */
+                font-family: 'Trebuchet MS', sans-serif; /* Material font */
+                font-size: 12px;                  /* Slightly larger font size */
+                line-height: 1;                 /* Improved line spacing */
+            }
+
+            QLineEdit {
+                min-height: 30px;                 /* Minimum height to make the input box bigger */
+            }
+        """)
 
         ###### egsl -> ss_ecdgen_save_label
         self.ss_ecdgen_save_label = customlabel(
@@ -263,6 +292,8 @@ class planningadmin_mainwindow(QMainWindow):
                 buttontext=x,
                 dimensions=(20, 20, 80, 30),
                 desired_font=("Trebuchet MS", 12),
+                buttontext_colour = single_source_of_truth.page_buttontext_colour,
+                button_transparency = single_source_of_truth.page_button_transparency,
             )
             for x in ["Browse", "Clear All"]
         ]
@@ -273,6 +304,8 @@ class planningadmin_mainwindow(QMainWindow):
             buttontext="Run VBS",
             dimensions=(20, 20, 100, 40),
             desired_font=("Trebuchet MS", 30),
+            buttontext_colour = single_source_of_truth.page_buttontext_colour,
+            button_transparency = single_source_of_truth.page_button_transparency,
         )
         # Adding elements into the vbs loader page grid
         self.vb_vbloader_frame_grid = QGridLayout()

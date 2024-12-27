@@ -6,7 +6,8 @@ class single_source_of_truth:
         "Opening SOH",
         "ZC32",
         "Prod Vol",
-        "DN"
+        "DN",
+        "Stock Transfer"
     ]
 
     """ LHS is keywords to find in filename, RHS is the filetype """
@@ -14,7 +15,8 @@ class single_source_of_truth:
         "OPENING SOH": "Opening SOH",
         "ZC32": "ZC32",
         "PROD VOL": "Prod Vol",
-        "ZC48": "DN"
+        "ZC48": "DN",
+        "H978": "Stock Transfer"
     }
     """ Contains all correct column names of each file """
     ecd_file_correct_columns = {
@@ -136,12 +138,21 @@ class single_source_of_truth:
     ]
 
     """ App theme colour names """
-    app_theme_colour_names = ["Green", "Red", "Blue", "Purple"]
+    app_theme_colour_names = ["Green", "Red", "Blue", "Purple", "Orange"]
 
     """ Colour mapping applied to sidebar and frames """
     mapped_rgb_tuples_to_colors = {
-        "Green": {"sidebar": (143, 189, 166), "pageframe": (204, 230, 217)},
-        "Red": {"sidebar": (173, 85, 135), "pageframe": (181, 143, 165)},
-        "Blue": {"sidebar": (79, 131, 168), "pageframe": (139, 184, 217)},
-        "Purple": {"sidebar": (135, 92, 181), "pageframe": (176, 153, 201)},
+        "Green": {"sidebar": (143, 189, 166), "pageframe": (225, 225, 225)},
+        "Red": {"sidebar": (173, 85, 135), "pageframe": (225, 225, 225)},
+        "Blue": {"sidebar": (79, 131, 168), "pageframe": (200, 200, 200)},
+        "Purple": {"sidebar": (135, 92, 181), "pageframe": (225, 225, 225)},
+        "Orange": {"sidebar": (255, 173, 51), "pageframe": (225, 225, 225)},
     }
+    
+    """ Sidebar button standarised style """
+    sidebar_buttontext_colour = "white" # colour in css colour str
+    sodebar_button_transparency = 30   # transparency as percentage% of 100 percent
+    
+    """ Page frames button standardised style """
+    page_buttontext_colour = "white" # colour in css colour str
+    page_button_transparency = 48   # transparency as percentage% of 100 percent

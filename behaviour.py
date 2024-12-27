@@ -339,13 +339,41 @@ def run_rupture_algorithm(mw, myws, dict_of_pd_excel_dfs):
                 None               ## Remarks leave blank for now
             ]
         )
+    
+    # STO - From the H978 doc
+    sto_df = dict_of_pd_excel_dfs["Stock Transfer"]
+    # dn_df = dn_df[
+    #     (dn_df['Unit'] == 'ST') &
+    #     (dn_df['Actual GI date'].dt.year == datetime.now().year) &
+    #     (dn_df['Unnamed: 14'] == 'SG')
+    # ]
+    for r in sto_df.values:
+        master_list.append(
+            [
+                "",               ## Customer keep blank for now
+                "STO",              ## Order Type is always "DN"
+                "",               ## Order No keep blank for now
+                r[1],               ## Material Number
+                r[2],               ## Material Desc
+                r[0],               ## Plant
+                r[5],          ## Qty
+                None,               ## Acc Qty keep blank for now, need to post-calculate
+                None,               ## status, keep blank for now
+                r[3].strftime('%d/%m/%Y'),          ## First Date, use prev_month_last_date for actual. hardcoding for now
+                None,              ## ECD Date leave blank for now
+                None,              ## Filling Date leave blank for now
+                None,              ## Delay leave blank for now
+                None,              ## Cat leave blank for now
+                None               ## Remarks leave blank for now
+            ]
+        )
         
     # Put data into final df & apply sorting by Material Number and then Order Type
     master_df = pd.DataFrame(master_list, columns=master_df_columns_template)
     master_df = master_df.sort_values(
         by=['Material Number', 'Order Type'], 
         ascending=[True, True], 
-        key=lambda x: x.map({'SOH': 1, 'ZPO3': 2, 'DN': 3, 'ZSO': 4}) if x.name == 'Order Type' else x
+        key=lambda x: x.map({'SOH': 1, 'ZPO3': 2, 'DN': 3, 'STO': 4, 'ZSO': 5}) if x.name == 'Order Type' else x
     )
     
     # Calculate Accum Qty
@@ -932,6 +960,10 @@ def gr_generate_rupture(mw):
                 #     sheet_name="COOIS",
                 # )
             elif f == "DN":
+                df_from_excel = pd.read_excel(
+                    file_path
+                )
+            else:
                 df_from_excel = pd.read_excel(
                     file_path
                 )
