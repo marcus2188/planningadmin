@@ -55,24 +55,24 @@ class planningadmin_mainwindow(QMainWindow):
         Set the vbox layout on side bar itself
         """
         self.title_label = customlabel(
-            displaytext="PLANNINGADMIN",
+            displaytext="PLANNING\nADMIN",
             dimensions=(20, 20, 20, 20),
             desired_font=("Courier New", 40),
             stylised=True,
         )
         self.generate_rupture_button = custombutton(
             buttontext="Rupture Report",
-            dimensions=(20, 20, 100, 40),
+            dimensions=(20, 20, 70, 40),
             desired_font=("Trebuchet MS", 16),
         )
         self.vbsloader_button = custombutton(
             buttontext="Vbs Loader",
-            dimensions=(20, 20, 100, 40),
+            dimensions=(20, 20, 70, 40),
             desired_font=("Trebuchet MS", 16),
         )
         self.settings_button = custombutton(
             buttontext="Settings",
-            dimensions=(20, 20, 100, 40),
+            dimensions=(20, 20, 70, 40),
             desired_font=("Trebuchet MS", 16),
         )
         self.vbox_side_bar = QVBoxLayout()
