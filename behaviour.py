@@ -263,7 +263,7 @@ def run_rupture_algorithm(mw, myws, dict_of_pd_excel_dfs):
     # ZSO - Add in rows from ZC32 doc after filtered applied
     zc32_df = dict_of_pd_excel_dfs["ZC32"]
     zc32_df = zc32_df[
-        (zc32_df['Source'] == 'SG') &
+        # (zc32_df['Source'] == 'SG') &
         (zc32_df['Delivery Date'].dt.year == datetime.now().year) &
         (zc32_df['Reason For Rejection'].isnull())
     ]
@@ -279,7 +279,7 @@ def run_rupture_algorithm(mw, myws, dict_of_pd_excel_dfs):
                 r[15] * -1,          ## Qty
                 None,               ## Acc Qty keep blank for now, need to post-calculate
                 None,               ## status, keep blank for now
-                r[12].strftime('%d/%m/%Y'),          ## First Date, use prev_month_last_date for actual. hardcoding for now
+                r[11].strftime('%d/%m/%Y'),          ## First Date, use prev_month_last_date for actual. hardcoding for now
                 None,              ## ECD Date leave blank for now
                 None,              ## Filling Date leave blank for now
                 None,              ## Delay leave blank for now
@@ -316,8 +316,8 @@ def run_rupture_algorithm(mw, myws, dict_of_pd_excel_dfs):
     dn_df = dict_of_pd_excel_dfs["DN"]
     dn_df = dn_df[
         (dn_df['Unit'] == 'ST') &
-        (dn_df['Actual GI date'].dt.year == datetime.now().year) &
-        (dn_df['Unnamed: 14'] == 'SG')
+        (dn_df['Actual GI date'].dt.year == datetime.now().year)
+        # (dn_df['Unnamed: 14'] == 'SG')
     ]
     for r in dn_df.values:
         master_list.append(
@@ -368,13 +368,15 @@ def run_rupture_algorithm(mw, myws, dict_of_pd_excel_dfs):
             ]
         )
         
-    # Put data into final df & apply sorting by Material Number and then Order Type
+    # Put data into final df & sort by matcode, then firstdate then order type
     master_df = pd.DataFrame(master_list, columns=master_df_columns_template)
+    master_df['tempdate'] = pd.to_datetime(master_df['First Date'], format='%d/%m/%Y')
     master_df = master_df.sort_values(
-        by=['Material Number', 'Order Type'], 
-        ascending=[True, True], 
+        by=['Material Number', 'tempdate', 'Order Type'],
+        ascending=[True, True, True],
         key=lambda x: x.map({'SOH': 1, 'ZPO3': 2, 'DN': 3, 'STO': 4, 'ZSO': 5}) if x.name == 'Order Type' else x
     )
+    master_df = master_df.drop(columns=['tempdate'])
     
     # Calculate Accum Qty
     master_df['Acc Qty'] = master_df.groupby('Material Number')['Qty'].cumsum()
@@ -944,10 +946,26 @@ def gr_generate_rupture(mw):
                     file_path,
                     sheet_name="Locally Produced",
                 )
+                # check until column 13 for opening SOH
+                if not list(df_from_excel.columns)[:14] == single_source_of_truth.rupture_correct_columns[f]:
+                    launch_message_box(
+                        mw,
+                        "Error: Invalid Excel Files Structure",
+                        f"The excel file supplied for {f} has an invalid structure, please check",
+                    )
+                    return
             elif f == "ZC32":
                 df_from_excel = pd.read_excel(
                     file_path
                 )
+                # check everything for zc32
+                if not list(df_from_excel.columns) == single_source_of_truth.rupture_correct_columns[f]:
+                    launch_message_box(
+                        mw,
+                        "Error: Invalid Excel Files Structure",
+                        f"The excel file supplied for {f} has an invalid structure, please check",
+                    )
+                    return
             elif f == "Prod Vol":
                 wb = op.load_workbook(file_path, read_only=True)
                 sheet = wb["COOIS"]
@@ -955,21 +973,42 @@ def gr_generate_rupture(mw):
                 for row in sheet.iter_rows(values_only=True):
                     data.append(row)
                 df_from_excel = pd.DataFrame(data[1:], columns=data[0])
-                # df_from_excel = pd.read_excel(
-                #     file_path,
-                #     sheet_name="COOIS",
-                # )
+                
+                # check first 22 cols only for prod vol
+                if not list(df_from_excel.columns)[:23] == single_source_of_truth.rupture_correct_columns[f]:
+                    launch_message_box(
+                        mw,
+                        "Error: Invalid Excel Files Structure",
+                        f"The excel file supplied for {f} has an invalid structure, please check",
+                    )
+                    return
             elif f == "DN":
                 df_from_excel = pd.read_excel(
                     file_path
                 )
-            else:
+                # check everything for DN
+                if not list(df_from_excel.columns) == single_source_of_truth.rupture_correct_columns[f]:
+                    launch_message_box(
+                        mw,
+                        "Error: Invalid Excel Files Structure",
+                        f"The excel file supplied for {f} has an invalid structure, please check",
+                    )
+                    return
+            elif f == "Stock Transfer":
                 df_from_excel = pd.read_excel(
                     file_path
                 )
-                
+                # check everything for STO
+                if not list(df_from_excel.columns) == single_source_of_truth.rupture_correct_columns[f]:
+                    launch_message_box(
+                        mw,
+                        "Error: Invalid Excel Files Structure",
+                        f"The excel file supplied for {f} has an invalid structure, please check",
+                    )
+                    return
+            
             dict_of_pd_excel_dfs[f] = df_from_excel
-
+        
         # If everything is ok, disable the app and start the process
         mw.central_widget.setDisabled(True)
 
