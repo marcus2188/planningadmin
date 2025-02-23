@@ -7,7 +7,8 @@ class single_source_of_truth:
         "ZC32",
         "Prod Vol",
         "DN",
-        "Stock Transfer"
+        "Stock Transfer",
+        "Z019"
     ]
 
     """ LHS is keywords to find in filename, RHS is the filetype """
@@ -16,7 +17,8 @@ class single_source_of_truth:
         "ZC32": "ZC32",
         "PROD VOL": "Prod Vol",
         "ZC48": "DN",
-        "H978": "Stock Transfer"
+        "H978": "Stock Transfer",
+        "Z019": "Z019"
     }
     """ Contains all correct column names of each file """
     ecd_file_correct_columns = {
@@ -227,6 +229,20 @@ class single_source_of_truth:
             "1st date (from SO)"
         ],
         "Stock Transfer": [
+            "Plant",
+            "Material",
+            "Material Description",
+            "Posting Date",
+            "Movement type",
+            "Quantity",
+            "Material Document",
+            "Unit of Entry",
+            "User Name",
+            "Purchase order",
+            "Batch",
+            "Order"
+        ],
+        "Z019": [
             "Plant",
             "Material",
             "Material Description",

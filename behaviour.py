@@ -265,6 +265,7 @@ def run_rupture_algorithm(mw, myws, dict_of_pd_excel_dfs):
     zc32_df = zc32_df[
         # (zc32_df['Source'] == 'SG') &
         (zc32_df['Delivery Date'].dt.year == datetime.now().year) &
+        (zc32_df['Delivery Date'].dt.month == datetime.now().month) &
         (zc32_df['Reason For Rejection'].isnull())
     ]
     for r in zc32_df.values:
@@ -275,8 +276,8 @@ def run_rupture_algorithm(mw, myws, dict_of_pd_excel_dfs):
                 r[2],               ## Order No keep blank for now
                 r[7],               ## Material Number
                 r[8],               ## Material Desc
-                r[13],               ## Plant
-                r[15] * -1,          ## Qty
+                r[12],               ## Plant
+                r[9] * -1,          ## Qty
                 None,               ## Acc Qty keep blank for now, need to post-calculate
                 None,               ## status, keep blank for now
                 r[11].strftime('%d/%m/%Y'),          ## First Date, use prev_month_last_date for actual. hardcoding for now
@@ -305,7 +306,7 @@ def run_rupture_algorithm(mw, myws, dict_of_pd_excel_dfs):
                 None,               ## status, keep blank for now
                 (r[13] + timedelta(days=3)).strftime('%d/%m/%Y'),          ## First Date, +3 days for ZPO3
                 None,              ## ECD Date leave blank for now
-                None,              ## Filling Date leave blank for now
+                r[13].strftime('%d/%m/%Y'),              ## Filling Date leave blank for now
                 None,              ## Delay leave blank for now
                 None,              ## Cat leave blank for now
                 None               ## Remarks leave blank for now
@@ -316,7 +317,8 @@ def run_rupture_algorithm(mw, myws, dict_of_pd_excel_dfs):
     dn_df = dict_of_pd_excel_dfs["DN"]
     dn_df = dn_df[
         (dn_df['Unit'] == 'ST') &
-        (dn_df['Actual GI date'].dt.year == datetime.now().year)
+        (dn_df['Actual GI date'].dt.year == datetime.now().year) &
+        (dn_df['Actual GI date'].dt.month == datetime.now().month)
         # (dn_df['Unnamed: 14'] == 'SG')
     ]
     for r in dn_df.values:
@@ -342,11 +344,6 @@ def run_rupture_algorithm(mw, myws, dict_of_pd_excel_dfs):
     
     # STO - From the H978 doc
     sto_df = dict_of_pd_excel_dfs["Stock Transfer"]
-    # dn_df = dn_df[
-    #     (dn_df['Unit'] == 'ST') &
-    #     (dn_df['Actual GI date'].dt.year == datetime.now().year) &
-    #     (dn_df['Unnamed: 14'] == 'SG')
-    # ]
     for r in sto_df.values:
         master_list.append(
             [
@@ -367,14 +364,41 @@ def run_rupture_algorithm(mw, myws, dict_of_pd_excel_dfs):
                 None               ## Remarks leave blank for now
             ]
         )
+    
+    # Z019 - From the Z019 doc
+    surplus_df = dict_of_pd_excel_dfs["Z019"]
+    surplus_df = surplus_df[
+        (surplus_df['Unit of Entry'] == 'ST')
+    ]
+    for r in surplus_df.values:
+        master_list.append(
+            [
+                "",               ## Customer keep blank for now
+                "ZPO",              ## Order Type is always "DN"
+                "",               ## Order No keep blank for now
+                r[1],               ## Material Number
+                r[2],               ## Material Desc
+                r[0],               ## Plant
+                r[5] * -1,          ## Qty
+                None,               ## Acc Qty keep blank for now, need to post-calculate
+                None,               ## status, keep blank for now
+                (r[3]+ timedelta(days=1)).strftime('%d/%m/%Y'),          ## First Date, use prev_month_last_date for actual. hardcoding for now
+                None,              ## ECD Date leave blank for now
+                None,              ## Filling Date leave blank for now
+                None,              ## Delay leave blank for now
+                None,              ## Cat leave blank for now
+                None               ## Remarks leave blank for now
+            ]
+        )
         
     # Put data into final df & sort by matcode, then firstdate then order type
     master_df = pd.DataFrame(master_list, columns=master_df_columns_template)
+    master_df = master_df[(master_df['Material Description'].str.endswith('SG'))]
     master_df['tempdate'] = pd.to_datetime(master_df['First Date'], format='%d/%m/%Y')
     master_df = master_df.sort_values(
         by=['Material Number', 'tempdate', 'Order Type'],
         ascending=[True, True, True],
-        key=lambda x: x.map({'SOH': 1, 'ZPO3': 2, 'DN': 3, 'STO': 4, 'ZSO': 5}) if x.name == 'Order Type' else x
+        key=lambda x: x.map({'SOH': 1, 'ZPO3': 2, 'ZPO': 3, 'STO': 4, 'DN': 5, 'ZSO': 6}) if x.name == 'Order Type' else x
     )
     master_df = master_df.drop(columns=['tempdate'])
     
@@ -923,7 +947,7 @@ def gr_generate_rupture(mw):
     """
     mw.progress_window.displayPlease()
     try:
-        # Verify all 4 files present
+        # Verify all 6 files present
         all_generate_rupture_browse_fields_text = [
             txtfld.toPlainText() for txtfld in mw.gr_browse_text_fields
         ]
@@ -931,7 +955,7 @@ def gr_generate_rupture(mw):
             launch_message_box(
                 mw,
                 "Error: Missing Files",
-                "All 4 files are required. You have not added one or more of the files, please check again",
+                "All 6 files are required. You have not added one or more of the files, please check again",
             )
             return
         mw.progress_window.updateProgressBar(1 * 100 / 8)
@@ -1006,7 +1030,18 @@ def gr_generate_rupture(mw):
                         f"The excel file supplied for {f} has an invalid structure, please check",
                     )
                     return
-            
+            elif f == "Z019":
+                df_from_excel = pd.read_excel(
+                    file_path
+                )
+                # check everything for Z019
+                if not list(df_from_excel.columns) == single_source_of_truth.rupture_correct_columns[f]:
+                    launch_message_box(
+                        mw,
+                        "Error: Invalid Excel Files Structure",
+                        f"The excel file supplied for {f} has an invalid structure, please check",
+                    )
+                    return
             dict_of_pd_excel_dfs[f] = df_from_excel
         
         # If everything is ok, disable the app and start the process
@@ -1464,7 +1499,14 @@ def init_gui_behaviour(mw):
             mw.gr_browse_buttons[ind].clicked.connect(
                 lambda: gr_add_browsed_file(mw, "DN")
             )
-
+        elif ft == "Stock Transfer":
+            mw.gr_browse_buttons[ind].clicked.connect(
+                lambda: gr_add_browsed_file(mw, "Stock Transfer")
+            )
+        elif ft == "Z019":
+            mw.gr_browse_buttons[ind].clicked.connect(
+                lambda: gr_add_browsed_file(mw, "Z019")
+            )
     mw.gr_generate_rupture_button.clicked.connect(lambda: gr_generate_rupture(mw))
 
     # Settings page buttons
