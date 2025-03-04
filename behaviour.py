@@ -408,6 +408,11 @@ def run_rupture_algorithm(mw, myws, dict_of_pd_excel_dfs):
     # Apply rupture status checks
     master_df['Status'] = master_df['Acc Qty'].apply(lambda x: 'Ok' if x > 0 else 'Nok')
     
+    # Add in Cat column via left join from material to cat mapping table
+    master_df = master_df.merge(dict_of_pd_excel_dfs["material_to_cat_mapping_table.xlsx"], left_on="Material Number", right_on="Code", how='left')
+    master_df["Cat"] = master_df["Product Cat"]
+    master_df.drop(columns=["Product Cat", "Code"], inplace=True)
+    
     ## Directly write master df into excel workbook sheet
     for r in dataframe_to_rows(master_df, index=False):
         myws.append(r)
@@ -795,7 +800,7 @@ def read_in_backend_excel(mw, excelfilepath, sheetname, usecolrange):
     )
 
     # Verify integrity (Exact column names and order + count must > 0)
-    correct_columns = single_source_of_truth.ecd_file_correct_columns[excelfilepath]
+    correct_columns = single_source_of_truth.rupture_correct_columns[excelfilepath]
     if not list(backend_df.columns) == correct_columns:
         launch_message_box(
             mw,
@@ -1043,6 +1048,12 @@ def gr_generate_rupture(mw):
                     )
                     return
             dict_of_pd_excel_dfs[f] = df_from_excel
+        
+        # Add in prod cat from material_to_cat mapping table into df list as well
+        material_to_cat_df = read_in_backend_excel(
+            mw, "material_to_cat_mapping_table.xlsx", "Sheet1", 2
+        )
+        dict_of_pd_excel_dfs["material_to_cat_mapping_table.xlsx"] = material_to_cat_df
         
         # If everything is ok, disable the app and start the process
         mw.central_widget.setDisabled(True)

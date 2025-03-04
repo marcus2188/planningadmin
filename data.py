@@ -255,6 +255,10 @@ class single_source_of_truth:
             "Purchase order",
             "Batch",
             "Order"
+        ],
+        "material_to_cat_mapping_table.xlsx": [
+            "Code",
+            "Product Cat",
         ]
     }
     
